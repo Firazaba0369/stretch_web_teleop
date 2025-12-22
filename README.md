@@ -20,7 +20,7 @@ For operator-to-robot text-to-speech, the web interface uses the system default 
 
 However, note the system defaults can change when you (un)plug audio devices (e.g., sometimes (un)plugging a mic can cause the system default speaker to change). Thus, it is best practice to always check.
 
-In the below instructions,  replace `<sink/source>` with `sink` for a speaker and `source` for a microphone. Note that this won't work if you're using X-11 forwarding:
+In the below instructions, replace `<sink/source>` with `sink` for a speaker and `source` for a microphone. Note that this won't work if you're using X-11 forwarding:
 
 1. List all speakers/microphones: `pactl list short <sink/source>s`
 1. Get the default: `pactl get-default-<sink/source>`
@@ -335,13 +335,67 @@ Stay tuned for instructions on using the web interface with a tablet as an end e
 
 # Troubleshooting
 
-## Collecting logs
+If you run into issues with Stretch Web Teleop, please follow these steps:
 
-First, ensure that your robot has the latest version of Web Teleop by [updating your ROS workspace](https://docs.hello-robot.com/0.3/installation/ros_workspace/).
+1. Most issues are resolved by re-creating your ROS2 workspace with the update script: [https://docs.hello-robot.com/latest/installation/ros_workspace/](https://docs.hello-robot.com/0.3/installation/ros_workspace/). Note that this will remove your existing `~/ament_ws` directory, so please back up your ROS2 Workspace if you have made changes to it.
 
-Then, launch the program normally, and if you see "FAILURE. COULD NOT LAUNCH WEB TELEOP.", then locate the zipped-up logs file and send them to Hello Robot Support (support@hello-robot.com).
+   1. If you see an error mentioning `librealsense` try to run:
+      ```
+      curl -sSf https://librealsense.intel.com/Debian/librealsense.pgp | sudo tee /etc/apt/keyrings/librealsense.pgp
+      echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | sudo tee /etc/apt/sources.list.d/librealsense.list
+      sudo apt update
+      sudo apt install librealsense2 librealsense2-udev-rules librealsense2-utils librealsense2-dev librealsense2-dbg
+      ```
+   1. If you do not see the camera feeds, [updating your ROS workspace](https://docs.hello-robot.com/latest/installation/ros_workspace/) usually resolves this problem, but you may also try running:
+      ```
+      cd ~/ament_ws/src/stretch_web_teleop
+      pip install -r ./requirements.txt
+      npm ci --force
+      sudo npx playwright install-deps
+      ```
 
-To locate the logs, open a file explorer, go into "Home", go into "stretch_user", go into "log", go into "web_teleop", locate the folder with the latest timestamp, and send "stretch_web_teleop_logs.zip" to the support team.
+1. If your issue persists, please send **both** of the following log files to the Hello Robot Support team at `support@hello-robot.com` so we can further investigate the issue:
+
+   1. **Web Teleop logs:**
+
+      - Open a file explorer and navigate to: `Home → stretch_user → log → web_teleop`
+
+      - Or run:
+
+        ```bash
+        nautilus $HOME/stretch_user/log/web_teleop
+        ```
+
+      - Locate the folder with the most recent timestamp, compress (zip) that folder, and send the resulting file named `stretch_web_teleop_logs.zip` to the support team.
+
+   1. **Robot-side launch logs:**
+
+      - In **Terminal 1**, launch robot-side components and save logs:
+
+        ```bash
+        ros2 launch stretch_web_teleop web_interface.launch.py >> log.txt
+        ```
+
+      - In **Terminal 2**, start the web server and robot browser:
+
+        ```bash
+        cd ~/ament_ws/src/stretch_web_teleop/
+        ./start_web_server_and_robot_browser.sh
+        ```
+
+      - Open the Web Teleop interface as you normally do.
+
+      - In **Terminal 1**, press `Ctrl+C`.
+
+      - In **Terminal 2**, run:
+
+        ```bash
+        pm2 kill
+        ```
+
+      - A file named `log.txt` will be created in the directory where you ran the command in **Terminal 1**.
+
+   Attach this `log.txt` file and send it together with `stretch_web_teleop_logs.zip` to the support team at `support@hello-robot.com`.
 
 # Licenses
 
