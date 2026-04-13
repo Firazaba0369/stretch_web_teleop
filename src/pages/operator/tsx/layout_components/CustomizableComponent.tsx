@@ -88,6 +88,8 @@ export const CustomizableComponent = (props: CustomizableComponentProps) => {
             return <RunStopButton {...props} />;
         case ComponentType.BatteryGuage:
             return <BatteryGuage {...props} />;
+        case ComponentType.keyboardTeleop:
+            return <div>Keyboard Teleop Component</div>;
         default:
             throw Error(
                 `CustomizableComponent cannot render component of unknown type: ${props.definition.type}\nYou may need to add a case for this component in the switch statement in CustomizableComponent.`

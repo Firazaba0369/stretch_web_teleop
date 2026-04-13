@@ -13,6 +13,7 @@ import {
     CameraViewDefinition,
     CameraViewId,
     MapDefinition,
+    keyboardTeleopDefinition
 } from "../utils/component_definitions";
 import { PopupModal } from "../basic_components/PopupModal";
 import { Dropdown } from "../basic_components/Dropdown";
@@ -488,6 +489,7 @@ const SidebarComponentProvider = (props: SidebarComponentProviderProps) => {
         { type: ComponentType.ButtonGrid },
         { type: ComponentType.VirtualJoystick },
         { type: ComponentType.Map },
+        { type: ComponentType.keyboardTeleop },
     ];
 
     function handleSelect(type: ComponentType, id?: ComponentId) {

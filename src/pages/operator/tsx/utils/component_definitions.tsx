@@ -25,6 +25,7 @@ export enum ComponentType {
     Map = "Map",
     RunStopButton = "Run Stop Button",
     BatteryGuage = "Battery Gauge",
+    keyboardTeleop = "Keyboard Teleop",
 }
 
 /**
@@ -112,7 +113,7 @@ export type PanelDefinition = ComponentDefinition & {
 export type TabDefinition = ParentComponentDefinition & {
     /** The label that appears at the top of the tabs object. */
     label: string;
-};
+};``
 
 /**
  * Definition for a video stream component
@@ -222,3 +223,24 @@ export type MapDefinition = ComponentDefinition & {
  * Definition for the run stop button
  */
 export type RunStopDefinition = ComponentDefinition;
+
+
+/**
+ * Definition for the keyboard teleoperation component 
+ * 
+ * @note May update later to include fields for key mappings but for now keep simple
+ */
+export type keyboardTeleopDefinition = ComponentDefinition & {
+    /**
+     * Whether or not the keyboard teleop component is enabled. If false, 
+     * the component will not be rendered and keybinds will not be active.
+     * 
+     */
+    keyboardTeleopEnabled: boolean;
+    /**
+     * List of keybinds to use for the keyboard teleop component. Each entry
+     * should be a string describing the keybind, e.g. "w: forward", "s: backward", etc.
+     * 
+     */
+    keybinds: string[];
+}; 
