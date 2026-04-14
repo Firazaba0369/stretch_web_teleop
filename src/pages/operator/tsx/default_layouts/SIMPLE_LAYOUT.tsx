@@ -10,7 +10,7 @@ import {
     LayoutDefinition,
     ActionMode,
     LayoutGridDefinition,
-    keyboardTeleopDefinition
+    KeyboardTeleopDefinition
 } from "../utils/component_definitions";
 
 /**
@@ -48,6 +48,20 @@ export const BASIC_LAYOUT: LayoutDefinition = {
                                 } as CameraViewDefinition,
                             ],
                         },
+                    ],
+                } as PanelDefinition,
+                {
+                    type: ComponentType.Panel,
+                    children: [
+                        {
+                            type: ComponentType.SingleTab,
+                            label: "Keyboard Teleop",
+                            children: [
+                                {
+                                    type: ComponentType.KeyboardTeleop,
+                                } as KeyboardTeleopDefinition,
+                            ],
+                        } as TabDefinition,
                     ],
                 } as PanelDefinition,
             ],
@@ -105,26 +119,6 @@ export const BASIC_LAYOUT: LayoutDefinition = {
                                 },
                             ],
                         },
-                    ],
-                } as PanelDefinition,
-            ],
-        } as LayoutGridDefinition,
-        // Possibly take out of default layout but keeping here for testing purposes for now
-        {
-            type: ComponentType.LayoutGrid,
-            children: [
-                {
-                    type: ComponentType.Panel,
-                    children: [
-                        {
-                            type: ComponentType.SingleTab,
-                            label: "Keyboard Teleop",
-                            children: [
-                                {
-                                    type: ComponentType.keyboardTeleop,
-                                } as keyboardTeleopDefinition,
-                            ],
-                        } as TabDefinition,
                     ],
                 } as PanelDefinition,
             ],

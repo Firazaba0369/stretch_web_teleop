@@ -18,7 +18,7 @@ import { DropZone } from "../layout_components/DropZone";
 type LayoutAreaProps = {
     /** Layout structure to render */
     layout: LayoutDefinition;
-    sharedState: SharedState;
+    sharedState: SharedState; 
 };
 
 /** Main area of the interface where the user can add, remove, or rearrange elements. */

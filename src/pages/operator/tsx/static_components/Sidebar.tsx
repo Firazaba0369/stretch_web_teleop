@@ -13,7 +13,7 @@ import {
     CameraViewDefinition,
     CameraViewId,
     MapDefinition,
-    keyboardTeleopDefinition
+    KeyboardTeleopDefinition
 } from "../utils/component_definitions";
 import { PopupModal } from "../basic_components/PopupModal";
 import { Dropdown } from "../basic_components/Dropdown";
@@ -97,6 +97,9 @@ function componentDescription(definition: ComponentDefinition): string {
         case ComponentType.ButtonGrid:
         case ComponentType.Map:
             return definition.type;
+        case ComponentType.KeyboardTeleop:
+            console.log("HIT KEYBOARD TELEOP CASE");
+            return "...";
         default:
             throw Error(
                 `Cannot get description for component type ${definition.type}\nYou may need to add a case for this component in the switch statement.`,
@@ -489,7 +492,7 @@ const SidebarComponentProvider = (props: SidebarComponentProviderProps) => {
         { type: ComponentType.ButtonGrid },
         { type: ComponentType.VirtualJoystick },
         { type: ComponentType.Map },
-        { type: ComponentType.keyboardTeleop },
+        { type: ComponentType.KeyboardTeleop },
     ];
 
     function handleSelect(type: ComponentType, id?: ComponentId) {
@@ -503,6 +506,10 @@ const SidebarComponentProvider = (props: SidebarComponentProviderProps) => {
                 break;
             case ComponentType.Map:
                 (definition as MapDefinition).storageHandler = storageHandler;
+                break;
+            case ComponentType.KeyboardTeleop:
+                (definition as KeyboardTeleopDefinition).keyboardTeleopEnabled = true;
+                (definition as KeyboardTeleopDefinition).keybinds = [];
                 break;
         }
 

@@ -15,6 +15,7 @@ import { VirtualJoystick } from "./VirtualJoystick";
 import { Map } from "./Map";
 import { RunStopButton } from "../static_components/RunStop";
 import { BatteryGuage } from "../static_components/BatteryGauge";
+import { KeyboardTeleop } from "./keyboardTeleop";
 
 /** State required for all elements */
 export type SharedState = {
@@ -88,8 +89,8 @@ export const CustomizableComponent = (props: CustomizableComponentProps) => {
             return <RunStopButton {...props} />;
         case ComponentType.BatteryGuage:
             return <BatteryGuage {...props} />;
-        case ComponentType.keyboardTeleop:
-            return <div>Keyboard Teleop Component</div>;
+        case ComponentType.KeyboardTeleop:
+            return <KeyboardTeleop {...props} />;
         default:
             throw Error(
                 `CustomizableComponent cannot render component of unknown type: ${props.definition.type}\nYou may need to add a case for this component in the switch statement in CustomizableComponent.`

@@ -25,7 +25,7 @@ export enum ComponentType {
     Map = "Map",
     RunStopButton = "Run Stop Button",
     BatteryGuage = "Battery Gauge",
-    keyboardTeleop = "Keyboard Teleop",
+    KeyboardTeleop = "Keyboard Teleop",
 }
 
 /**
@@ -230,7 +230,7 @@ export type RunStopDefinition = ComponentDefinition;
  * 
  * @note May update later to include fields for key mappings but for now keep simple
  */
-export type keyboardTeleopDefinition = ComponentDefinition & {
+export type KeyboardTeleopDefinition = ComponentDefinition & {
     /**
      * Whether or not the keyboard teleop component is enabled. If false, 
      * the component will not be rendered and keybinds will not be active.
