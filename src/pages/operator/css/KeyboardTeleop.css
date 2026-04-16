@@ -1,0 +1,189 @@
+.keyboard-teleop {
+    width: 100%;
+    padding: 8px 12px 10px;
+    box-sizing: border-box;
+    background: #f8f8f8;
+}
+
+.keyboard-teleop-current-binding {
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.keyboard-teleop-row-block {
+    width: 100%;
+}
+
+/* Top row: Binding | Step Size | Quit */
+
+.keyboard-teleop-binding {
+    text-align: left;
+    justify-self: start;
+}
+
+.keyboard-teleop-binding h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.1;
+}
+
+.keyboard-teleop-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: start;
+    gap: 18px;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.keyboard-teleop-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-self: center;
+}
+
+.keyboard-teleop-step .keyboard-teleop-row {
+    justify-content: center;
+}
+
+.keyboard-teleop-quit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-self: end;
+    min-width: 64px;
+}
+
+.keyboard-teleop-quit .keyboard-teleop-section-title,
+.keyboard-teleop-quit .keyboard-teleop-row {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Lower layout */
+
+.keyboard-teleop-lower {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+    width: 100%;
+    margin-top: 0;
+}
+
+.keyboard-teleop-side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.keyboard-teleop-side-left {
+    align-items: center;
+}
+
+.keyboard-teleop-side-right {
+    align-items: center;
+}
+
+.keyboard-teleop-side-left .keyboard-teleop-section {
+    width: fit-content;
+    margin-right: auto;
+    margin-left: 10%;
+    text-align: center;
+}
+
+.keyboard-teleop-side-right .keyboard-teleop-section {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: 10%;
+    text-align: center;
+}
+
+/* Sections */
+
+.keyboard-teleop-section {
+    min-width: 0;
+}
+
+.keyboard-teleop-section-title {
+    width: 100%;
+    margin-bottom: 2px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.1;
+}
+
+/* Rows and controls */
+
+.keyboard-teleop-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    align-items: flex-start;
+}
+
+.keyboard-teleop-control-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 46px;
+}
+
+.keyboard-teleop-control-label {
+    margin-bottom: 2px;
+    font-size: 11px;
+    line-height: 1.05;
+    text-align: center;
+}
+
+.keyboard-teleop-key {
+    width: 40px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border: 1px solid #666;
+    background: #555;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.keyboard-teleop-key.binding {
+    animation: teleop-blink 1s step-start infinite;
+}
+
+@keyframes teleop-blink {
+    50% {
+        opacity: 0.2;
+    }
+}
+
+@media (max-width: 1100px) {
+    .keyboard-teleop-top-row {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 12px;
+    }
+
+    .keyboard-teleop-binding {
+        width: 100%;
+        text-align: center;
+    }
+
+    .keyboard-teleop-lower {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .keyboard-teleop-side-left .keyboard-teleop-section,
+    .keyboard-teleop-side-right .keyboard-teleop-section {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}

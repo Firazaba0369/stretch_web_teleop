@@ -15,7 +15,7 @@ import { VirtualJoystick } from "./VirtualJoystick";
 import { Map } from "./Map";
 import { RunStopButton } from "../static_components/RunStop";
 import { BatteryGuage } from "../static_components/BatteryGauge";
-import { KeyboardTeleop } from "./keyboardTeleop";
+import { KeyboardTeleop } from "./KeyboardTeleop";
 
 /** State required for all elements */
 export type SharedState = {

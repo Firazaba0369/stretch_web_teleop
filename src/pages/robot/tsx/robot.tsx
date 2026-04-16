@@ -28,7 +28,7 @@ const showTabletActionName = "/show_tablet";
 
 export class Robot extends React.Component {
     private ros: ROSLIB.Ros;
-    private readonly rosURL = "wss://localhost:9090";
+    private readonly rosURL = "ws://localhost:9090";
     private rosReconnectTimerID?: ReturnType<typeof setTimeout>;
     private onRosConnectCallback?: () => Promise<void>;
     private jointLimits: { [key in ValidJoints]?: [number, number] } = {};
