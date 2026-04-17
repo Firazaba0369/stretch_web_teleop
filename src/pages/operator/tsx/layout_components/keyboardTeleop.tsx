@@ -253,6 +253,15 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
 
             const formattedKey = formatKey(event);
 
+            const keyAlreadyUsed = Object.entries(bindings).some(
+                ([controlId, boundKey]) =>
+                    controlId !== active.id && boundKey === formattedKey
+            );
+
+            if (keyAlreadyUsed) {
+                return;
+            }
+
             setBindings((prev) => ({
                 ...prev,
                 [active.id]: formattedKey,
@@ -266,7 +275,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [isBinding, activeControl]);
+    }, [isBinding, activeControl, bindings]);
 
     // Group controls by their defined groups for organized rendering
     const grouped = useMemo(() => {
