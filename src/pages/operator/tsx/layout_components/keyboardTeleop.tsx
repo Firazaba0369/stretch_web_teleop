@@ -119,12 +119,85 @@ const ControlItem = ({ control, value, active = false }: ControlItemProps) => {
     );
 };
 
+// Component for rendering a group of controls in a diamond layout
+type DiamondGroupProps = {
+    title: string;
+    controls: TeleopControl[];
+    bindings: BindingMap;
+    activeControlId?: TeleopControlId;
+};
+
+// Diamond group used for Base, Arm, Gripper, and Head sections
+const DiamondGroup = ({
+    title,
+    controls,
+    bindings,
+    activeControlId,
+}: DiamondGroupProps) => {
+    
+    // Map controls to their respective positions in the diamond layout based on their labels
+    const top = controls.find((c) => c.label === "Forward" || c.label === "Up");
+    const left = controls.find((c) => c.label === "Left" || c.label === "In" || c.label === "Close");
+    const right = controls.find((c) => c.label === "Right" || c.label === "Out" || c.label === "Open");
+    const bottom = controls.find((c) => c.label === "Back" || c.label === "Down");
+
+    return (
+        <div className="keyboard-teleop-section">
+            <div className="keyboard-teleop-section-title">{title}</div>
+
+            <div className="keyboard-teleop-diamond">
+                <div className="diamond-top">
+                    {top && (
+                        <ControlItem
+                            control={top}
+                            value={bindings[top.id]}
+                            active={activeControlId === top.id}
+                        />
+                    )}
+                </div>
+
+                <div className="diamond-left">
+                    {left && (
+                        <ControlItem
+                            control={left}
+                            value={bindings[left.id]}
+                            active={activeControlId === left.id}
+                        />
+                    )}
+                </div>
+
+                <div className="diamond-right">
+                    {right && (
+                        <ControlItem
+                            control={right}
+                            value={bindings[right.id]}
+                            active={activeControlId === right.id}
+                        />
+                    )}
+                </div>
+
+                <div className="diamond-bottom">
+                    {bottom && (
+                        <ControlItem
+                            control={bottom}
+                            value={bindings[bottom.id]}
+                            active={activeControlId === bottom.id}
+                        />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 // Main component for keyboard teleoperation binding interface
 export const KeyboardTeleop = (props: CustomizableComponentProps) => {
     if (!props.definition.type) {
         throw new Error(`Component at ${props.path} is missing type`);
     }
 
+    // State to hold the current bindings and the index of the control being bound
     const [bindings, setBindings] = useState<BindingMap>({});
     const [bindingIndex, setBindingIndex] = useState(0);
 
@@ -214,67 +287,33 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
                     </div>
                 </div>
             </div>
-
+            
             <div className="keyboard-teleop-lower">
-                <div className="keyboard-teleop-side keyboard-teleop-side-left">
-                    <div className="keyboard-teleop-section">
-                        <div className="keyboard-teleop-section-title">Base</div>
-                        <div className="keyboard-teleop-row">
-                            {grouped.BASE.map((control) => (
-                                <ControlItem
-                                    key={control.id}
-                                    control={control}
-                                    value={bindings[control.id]}
-                                    active={activeControl?.id === control.id}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                <DiamondGroup
+                    title="Base"
+                    controls={grouped.BASE}
+                    bindings={bindings}
+                    activeControlId={activeControl?.id}
+                />
+                <DiamondGroup
+                    title="Gripper"
+                    controls={grouped.GRIPPER}
+                    bindings={bindings}
+                    activeControlId={activeControl?.id}
+                />
+                <DiamondGroup
+                    title="Arm"
+                    controls={grouped.ARM}
+                    bindings={bindings}
+                    activeControlId={activeControl?.id}
+                />
 
-                    <div className="keyboard-teleop-section">
-                        <div className="keyboard-teleop-section-title">Gripper</div>
-                        <div className="keyboard-teleop-row">
-                            {grouped.GRIPPER.map((control) => (
-                                <ControlItem
-                                    key={control.id}
-                                    control={control}
-                                    value={bindings[control.id]}
-                                    active={activeControl?.id === control.id}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="keyboard-teleop-side keyboard-teleop-side-right">
-                    <div className="keyboard-teleop-section">
-                        <div className="keyboard-teleop-section-title">Arm</div>
-                        <div className="keyboard-teleop-row">
-                            {grouped.ARM.map((control) => (
-                                <ControlItem
-                                    key={control.id}
-                                    control={control}
-                                    value={bindings[control.id]}
-                                    active={activeControl?.id === control.id}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="keyboard-teleop-section">
-                        <div className="keyboard-teleop-section-title">Head</div>
-                        <div className="keyboard-teleop-row">
-                            {grouped.HEAD.map((control) => (
-                                <ControlItem
-                                    key={control.id}
-                                    control={control}
-                                    value={bindings[control.id]}
-                                    active={activeControl?.id === control.id}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <DiamondGroup
+                    title="Head"
+                    controls={grouped.HEAD}
+                    bindings={bindings}
+                    activeControlId={activeControl?.id}
+                />
             </div>
         </div>
     );
