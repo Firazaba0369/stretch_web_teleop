@@ -82,6 +82,28 @@ function formatKey(event: KeyboardEvent): string {
     return key;
 }
 
+// Helper function to format key values for display in the key tiles, with special handling for certain keys
+function formatKeyDisplay(value?: string): string {
+    if (!value) return "";
+
+    switch (value) {
+        case "Backspace":
+            return "Bksp";
+        case "Space":
+            return "Space"; // already short enough
+        case "Control":
+            return "Ctrl";
+        case "Escape":
+            return "Esc";
+        case "Delete":
+            return "Del";
+        case "Enter":
+            return "⏎";
+        default:
+            return value.length > 5 ? value.slice(0, 5) : value;
+    }
+}
+
 // Function to determine if a key is reserved and should not be used for bindings
 function isReservedKey(event: KeyboardEvent): boolean {
     return event.key === "Tab";
@@ -96,8 +118,11 @@ type KeyTileProps = {
 // Component for rendering a single key tile
 const KeyTile = ({ value, blinking = false }: KeyTileProps) => {
     return (
-        <div className={`keyboard-teleop-key ${blinking ? "binding" : ""}`}>
-            {value ?? ""}
+        <div
+            className={`keyboard-teleop-key ${blinking ? "binding" : ""}`}
+            title={value ?? ""}
+        >
+            {formatKeyDisplay(value)}
         </div>
     );
 };
@@ -197,22 +222,33 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
         throw new Error(`Component at ${props.path} is missing type`);
     }
 
-    // State to hold the current bindings and the index of the control being bound
+    // State to track current bindings and which control is currently being bound
     const [bindings, setBindings] = useState<BindingMap>({});
-    const [bindingIndex, setBindingIndex] = useState(0);
+    const [bindingIndex, setBindingIndex] = useState<number | null>(null);
 
-    const activeControl = TELEOP_CONTROLS[bindingIndex];
-    const bindingComplete = bindingIndex >= TELEOP_CONTROLS.length;
+    const isBinding = bindingIndex !== null && bindingIndex < TELEOP_CONTROLS.length;
+    const bindingComplete = bindingIndex !== null && bindingIndex >= TELEOP_CONTROLS.length;
+    const activeControl =
+        bindingIndex !== null && bindingIndex < TELEOP_CONTROLS.length
+            ? TELEOP_CONTROLS[bindingIndex]
+            : undefined;
 
+    // Function to start the binding process by resetting state 
+    const startBinding = () => {
+        setBindings({});
+        setBindingIndex(0);
+    };
+
+    // Effect to handle keydown events for binding controls when in binding mode
     useEffect(() => {
-        // Handler for keydown events to capture user input for bindings
+        if (!isBinding) return;
+
         const onKeyDown = (event: KeyboardEvent) => {
-            if (bindingComplete) return;
             if (isReservedKey(event)) return;
 
             event.preventDefault();
 
-            const active = TELEOP_CONTROLS[bindingIndex];
+            const active = activeControl;
             if (!active) return;
 
             const formattedKey = formatKey(event);
@@ -222,12 +258,15 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
                 [active.id]: formattedKey,
             }));
 
-            setBindingIndex((prev) => prev + 1);
+            setBindingIndex((prev) => {
+                if (prev === null) return prev;
+                return prev + 1;
+            });
         };
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [bindingIndex, bindingComplete]);
+    }, [isBinding, activeControl]);
 
     // Group controls by their defined groups for organized rendering
     const grouped = useMemo(() => {
@@ -241,22 +280,26 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
         };
     }, []);
 
+    // Determine the label for the bind button based on the current binding state
+    const bindButtonLabel = isBinding
+        ? `Binding ${activeControl?.hint ? `${activeControl.hint}: ` : ""}${activeControl?.label ?? ""} key...`
+        : bindingComplete
+            ? "Rebind Keys"
+            : "Bind Keys";
+
     // Render the keyboard teleoperation binding interface with sections for each control group
     return (
         <div className="keyboard-teleop">
             <div className="keyboard-teleop-row-block keyboard-teleop-top-row">
                 <div className="keyboard-teleop-binding">
-                    {bindingComplete ? (
-                        <h3>Bindings Complete</h3>
-                    ) : (
-                        <h3>
-                            Binding:
-                            <span className="keyboard-teleop-current-binding">
-                                {activeControl?.hint ? ` ${activeControl.hint}: ` : " "}
-                                {activeControl?.label}
-                            </span>
-                        </h3>
-                    )}
+                    <button
+                        type="button"
+                        className={`keyboard-teleop-bind-button ${isBinding ? "is-binding" : ""}`}
+                        onClick={startBinding}
+                        disabled={isBinding}
+                    >
+                        {bindButtonLabel}
+                    </button>
                 </div>
 
                 <div className="keyboard-teleop-section keyboard-teleop-step">

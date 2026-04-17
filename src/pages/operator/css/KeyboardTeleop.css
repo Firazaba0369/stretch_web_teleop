@@ -36,6 +36,33 @@
     line-height: 1.1;
 }
 
+.keyboard-teleop-bind-button {
+    min-height: 36px;
+    padding: 8px 14px;
+    border: 1px solid #666;
+    background: #fff;
+    color: #222;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.1;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.keyboard-teleop-bind-button:hover:not(:disabled) {
+    background: #f0f0f0;
+}
+
+.keyboard-teleop-bind-button:disabled {
+    cursor: default;
+    opacity: 1;
+}
+
+.keyboard-teleop-bind-button.is-binding {
+    background: #555;
+    color: #fff;
+}
+
 .keyboard-teleop-step {
     grid-column: 2;
     justify-self: center;
@@ -110,6 +137,7 @@
         "left . right"
         ". bottom .";
     justify-content: center;
+    justify-items: center;
     align-content: center;
     gap: 4px;
     width: 128px;
@@ -146,8 +174,14 @@
 
 .keyboard-teleop-diamond .keyboard-teleop-key {
     width: 34px;
+    min-width: 34px;
+    max-width: 34px;
     height: 30px;
-    font-size: 12px;
+    padding: 0 4px;
+    font-size: 11px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 /* Generic row controls */
@@ -174,8 +208,10 @@
 }
 
 .keyboard-teleop-key {
-    width: 40px;
+    min-width: 40px;
+    width: auto;
     height: 30px;
+    padding: 0 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -185,6 +221,7 @@
     color: white;
     font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .keyboard-teleop-key.binding {
