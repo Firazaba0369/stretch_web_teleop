@@ -113,13 +113,14 @@ function isReservedKey(event: KeyboardEvent): boolean {
 type KeyTileProps = {
     value?: string;
     blinking?: boolean;
+    pressed?: boolean;
 };
 
 // Component for rendering a single key tile
-const KeyTile = ({ value, blinking = false }: KeyTileProps) => {
+const KeyTile = ({ value, blinking = false, pressed = false }: KeyTileProps) => {
     return (
         <div
-            className={`keyboard-teleop-key ${blinking ? "binding" : ""}`}
+            className={`keyboard-teleop-key ${blinking ? "binding" : ""} ${pressed ? "pressed" : ""}`}
             title={value ?? ""}
         >
             {formatKeyDisplay(value)}
@@ -132,14 +133,15 @@ type ControlItemProps = {
     control: TeleopControl;
     value?: string;
     active?: boolean;
+    pressed?: boolean;
 };
 
 // Component for rendering a single control item with its label and associated key tile
-const ControlItem = ({ control, value, active = false }: ControlItemProps) => {
+const ControlItem = ({ control, value, active = false, pressed = false }: ControlItemProps) => {
     return (
         <div className="keyboard-teleop-control-item">
             <div className="keyboard-teleop-control-label">{control.label}</div>
-            <KeyTile value={value} blinking={active && !value} />
+            <KeyTile value={value} blinking={active && !value} pressed={pressed} />
         </div>
     );
 };
@@ -150,6 +152,7 @@ type DiamondGroupProps = {
     controls: TeleopControl[];
     bindings: BindingMap;
     activeControlId?: TeleopControlId;
+    pressedKeys: Set<string>;
 };
 
 // Diamond group used for Base, Arm, Gripper, and Head sections
@@ -158,6 +161,7 @@ const DiamondGroup = ({
     controls,
     bindings,
     activeControlId,
+    pressedKeys,
 }: DiamondGroupProps) => {
     
     // Map controls to their respective positions in the diamond layout based on their labels
@@ -177,6 +181,7 @@ const DiamondGroup = ({
                             control={top}
                             value={bindings[top.id]}
                             active={activeControlId === top.id}
+                            pressed={!!bindings[top.id] && pressedKeys.has(bindings[top.id] as string)}
                         />
                     )}
                 </div>
@@ -187,6 +192,7 @@ const DiamondGroup = ({
                             control={left}
                             value={bindings[left.id]}
                             active={activeControlId === left.id}
+                            pressed={!!bindings[left.id] && pressedKeys.has(bindings[left.id] as string)}
                         />
                     )}
                 </div>
@@ -197,6 +203,7 @@ const DiamondGroup = ({
                             control={right}
                             value={bindings[right.id]}
                             active={activeControlId === right.id}
+                            pressed={!!bindings[right.id] && pressedKeys.has(bindings[right.id] as string)}
                         />
                     )}
                 </div>
@@ -207,6 +214,7 @@ const DiamondGroup = ({
                             control={bottom}
                             value={bindings[bottom.id]}
                             active={activeControlId === bottom.id}
+                            pressed={!!bindings[bottom.id] && pressedKeys.has(bindings[bottom.id] as string)}
                         />
                     )}
                 </div>
@@ -222,9 +230,13 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
         throw new Error(`Component at ${props.path} is missing type`);
     }
 
+    // Track pressed keys for blink effect
+    const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
+
     // State to track current bindings and which control is currently being bound
     const [bindings, setBindings] = useState<BindingMap>({});
     const [bindingIndex, setBindingIndex] = useState<number | null>(null);
+
 
     const isBinding = bindingIndex !== null && bindingIndex < TELEOP_CONTROLS.length;
     const bindingComplete = bindingIndex !== null && bindingIndex >= TELEOP_CONTROLS.length;
@@ -237,6 +249,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
     const startBinding = () => {
         setBindings({});
         setBindingIndex(0);
+        setPressedKeys(new Set());
     };
 
     // Effect to handle keydown events for binding controls when in binding mode
@@ -276,6 +289,41 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [isBinding, activeControl, bindings]);
+
+    // Effect to track currently pressed keys for visual feedback on key tiles
+    useEffect(() => {
+        if (isBinding) return;
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            const formattedKey = formatKey(event);
+
+            setPressedKeys((prev) => {
+                if (prev.has(formattedKey)) return prev;
+                const next = new Set(prev);
+                next.add(formattedKey);
+                return next;
+            });
+        };
+
+        const onKeyUp = (event: KeyboardEvent) => {
+            const formattedKey = formatKey(event);
+
+            setPressedKeys((prev) => {
+                if (!prev.has(formattedKey)) return prev;
+                const next = new Set(prev);
+                next.delete(formattedKey);
+                return next;
+            });
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+        };
+    }, [isBinding]);
 
     // Group controls by their defined groups for organized rendering
     const grouped = useMemo(() => {
@@ -320,6 +368,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
                                 control={control}
                                 value={bindings[control.id]}
                                 active={activeControl?.id === control.id}
+                                pressed={!!bindings[control.id] && pressedKeys.has(bindings[control.id] as string)}
                             />
                         ))}
                     </div>
@@ -334,6 +383,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
                                 control={control}
                                 value={bindings[control.id]}
                                 active={activeControl?.id === control.id}
+                                pressed={!!bindings[control.id] && pressedKeys.has(bindings[control.id] as string)}
                             />
                         ))}
                     </div>
@@ -346,18 +396,21 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
                     controls={grouped.BASE}
                     bindings={bindings}
                     activeControlId={activeControl?.id}
+                    pressedKeys={pressedKeys}
                 />
                 <DiamondGroup
                     title="Gripper"
                     controls={grouped.GRIPPER}
                     bindings={bindings}
                     activeControlId={activeControl?.id}
+                    pressedKeys={pressedKeys}
                 />
                 <DiamondGroup
                     title="Arm"
                     controls={grouped.ARM}
                     bindings={bindings}
                     activeControlId={activeControl?.id}
+                    pressedKeys={pressedKeys}
                 />
 
                 <DiamondGroup
@@ -365,6 +418,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
                     controls={grouped.HEAD}
                     bindings={bindings}
                     activeControlId={activeControl?.id}
+                    pressedKeys={pressedKeys}
                 />
             </div>
         </div>
