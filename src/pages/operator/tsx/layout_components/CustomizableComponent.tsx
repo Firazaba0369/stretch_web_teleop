@@ -56,6 +56,7 @@ export type CustomizableComponentProps = {
     definition: ComponentDefinition;
     /** see {@link SharedState} */
     sharedState: SharedState;
+    parentOverrides?: Record<string, any>;
 };
 
 /**
@@ -90,7 +91,8 @@ export const CustomizableComponent = (props: CustomizableComponentProps) => {
         case ComponentType.BatteryGuage:
             return <BatteryGuage {...props} />;
         case ComponentType.KeyboardTeleop:
-            return <KeyboardTeleop {...props} />;
+            const kbExtra = (props as any).parentOverrides?.keyboardTeleop;
+            return <KeyboardTeleop {...(props as any)} {...(kbExtra || {})} />;
         default:
             throw Error(
                 `CustomizableComponent cannot render component of unknown type: ${props.definition.type}\nYou may need to add a case for this component in the switch statement in CustomizableComponent.`

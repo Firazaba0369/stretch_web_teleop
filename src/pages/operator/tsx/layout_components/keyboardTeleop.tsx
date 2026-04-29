@@ -66,6 +66,7 @@ const TELEOP_CONTROLS: TeleopControl[] = [
 
 type BindingMap = Partial<Record<TeleopControlId, string>>;
 
+
 // Helper function to format key values for display
 function formatKey(event: KeyboardEvent): string {
     const key = event.key;
@@ -225,7 +226,7 @@ const DiamondGroup = ({
 
 
 // Main component for keyboard teleoperation binding interface
-export const KeyboardTeleop = (props: CustomizableComponentProps) => {
+export const KeyboardTeleop = (props: CustomizableComponentProps & { onCollapsedChange?: (minimized: boolean) => void }) => {
     if (!props.definition.type) {
         throw new Error(`Component at ${props.path} is missing type`);
     }
@@ -237,7 +238,6 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
     const [bindings, setBindings] = useState<BindingMap>({});
     const [bindingIndex, setBindingIndex] = useState<number | null>(null);
 
-
     const isBinding = bindingIndex !== null && bindingIndex < TELEOP_CONTROLS.length;
     const bindingComplete = bindingIndex !== null && bindingIndex >= TELEOP_CONTROLS.length;
     const activeControl =
@@ -245,12 +245,31 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
             ? TELEOP_CONTROLS[bindingIndex]
             : undefined;
 
+    // auto-collapse after last key is bound
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    useEffect(() => {
+        // DEBUG: log collapsed state and whether parent handler exists
+        console.debug('KeyboardTeleop: isCollapsed=', isCollapsed, 'hasOnCollapsed=', !!props.onCollapsedChange);
+    }, [isCollapsed, props.onCollapsedChange]);
+
+    useEffect(() => {
+        props.onCollapsedChange?.(isCollapsed);
+    }, [isCollapsed, props.onCollapsedChange]);
+
     // Function to start the binding process by resetting state 
     const startBinding = () => {
         setBindings({});
         setBindingIndex(0);
-        setPressedKeys(new Set());
+        setPressedKeys(new Set()); 
+        setIsCollapsed(false);
     };
+
+    useEffect(() => {
+        if (bindingComplete) {
+            setIsCollapsed(true);
+        }
+    }, [bindingComplete]);
 
     // Effect to handle keydown events for binding controls when in binding mode
     useEffect(() => {
@@ -346,81 +365,106 @@ export const KeyboardTeleop = (props: CustomizableComponentProps) => {
 
     // Render the keyboard teleoperation binding interface with sections for each control group
     return (
-        <div className="keyboard-teleop">
-            <div className="keyboard-teleop-row-block keyboard-teleop-top-row">
-                <div className="keyboard-teleop-binding">
-                    <button
-                        type="button"
-                        className={`keyboard-teleop-bind-button ${isBinding ? "is-binding" : ""}`}
-                        onClick={startBinding}
-                        disabled={isBinding}
-                    >
-                        {bindButtonLabel}
-                    </button>
-                </div>
+        <div className={`keyboard-teleop ${isCollapsed ? "collapsed" : "expanded"}`}>
+            <button
+                type="button"
+                className="keyboard-teleop-collapse-button"
+                onClick={() => setIsCollapsed((prev) => !prev)}
+                aria-expanded={!isCollapsed}
+                aria-label={isCollapsed ? "Expand keyboard teleop" : "Collapse keyboard teleop"}
+            >
+                {isCollapsed ? "▼" : "▲"}
+            </button>
 
-                <div className="keyboard-teleop-section keyboard-teleop-step">
-                    <div className="keyboard-teleop-section-title">Step Size</div>
-                    <div className="keyboard-teleop-row">
-                        {grouped.STEP.map((control) => (
-                            <ControlItem
-                                key={control.id}
-                                control={control}
-                                value={bindings[control.id]}
-                                active={activeControl?.id === control.id}
-                                pressed={!!bindings[control.id] && pressedKeys.has(bindings[control.id] as string)}
+            {!isCollapsed && (
+                <div className="keyboard-teleop-body">
+                    <>
+                        <div className="keyboard-teleop-row-block keyboard-teleop-top-row">
+                            <div className="keyboard-teleop-binding">
+                                <button
+                                    type="button"
+                                    className={`keyboard-teleop-bind-button ${isBinding ? "is-binding" : ""}`}
+                                    onClick={startBinding}
+                                    disabled={isBinding}
+                                >
+                                    {bindButtonLabel}
+                                </button>
+                            </div>
+
+                            <div className="keyboard-teleop-section keyboard-teleop-step">
+                                <div className="keyboard-teleop-section-title">Step Size</div>
+                                <div className="keyboard-teleop-row">
+                                    {grouped.STEP.map((control) => (
+                                        <ControlItem
+                                            key={control.id}
+                                            control={control}
+                                            value={bindings[control.id]}
+                                            active={activeControl?.id === control.id}
+                                            pressed={!!bindings[control.id] && pressedKeys.has(bindings[control.id] as string)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="keyboard-teleop-section keyboard-teleop-quit">
+                                <div className="keyboard-teleop-quit-title-row">
+                                    <button
+                                        type="button"
+                                        className="keyboard-teleop-expand-button"
+                                        onClick={() => setIsCollapsed((prev) => !prev)}
+                                        aria-expanded={!isCollapsed}
+                                        aria-label={isCollapsed ? "Expand keyboard teleop" : "Collapse keyboard teleop"}
+                                    >
+                                        {isCollapsed ? "\u25bc" : "\u25b2"}
+                                    </button>
+                                </div>
+                                <div className="keyboard-teleop-row">
+                                    {grouped.QUIT.map((control) => (
+                                        <ControlItem
+                                            key={control.id}
+                                            control={control}
+                                            value={bindings[control.id]}
+                                            active={activeControl?.id === control.id}
+                                            pressed={!!bindings[control.id] && pressedKeys.has(bindings[control.id] as string)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="keyboard-teleop-lower">
+                            <DiamondGroup
+                                title="Base"
+                                controls={grouped.BASE}
+                                bindings={bindings}
+                                activeControlId={activeControl?.id}
+                                pressedKeys={pressedKeys}
                             />
-                        ))}
-                    </div>
-                </div>
-
-                <div className="keyboard-teleop-section keyboard-teleop-quit">
-                    <div className="keyboard-teleop-section-title">Quit</div>
-                    <div className="keyboard-teleop-row">
-                        {grouped.QUIT.map((control) => (
-                            <ControlItem
-                                key={control.id}
-                                control={control}
-                                value={bindings[control.id]}
-                                active={activeControl?.id === control.id}
-                                pressed={!!bindings[control.id] && pressedKeys.has(bindings[control.id] as string)}
+                            <DiamondGroup
+                                title="Gripper"
+                                controls={grouped.GRIPPER}
+                                bindings={bindings}
+                                activeControlId={activeControl?.id}
+                                pressedKeys={pressedKeys}
                             />
-                        ))}
-                    </div>
+                            <DiamondGroup
+                                title="Arm"
+                                controls={grouped.ARM}
+                                bindings={bindings}
+                                activeControlId={activeControl?.id}
+                                pressedKeys={pressedKeys}
+                            />
+                            <DiamondGroup
+                                title="Head"
+                                controls={grouped.HEAD}
+                                bindings={bindings}
+                                activeControlId={activeControl?.id}
+                                pressedKeys={pressedKeys}
+                            />
+                        </div>
+                    </>
                 </div>
-            </div>
-            
-            <div className="keyboard-teleop-lower">
-                <DiamondGroup
-                    title="Base"
-                    controls={grouped.BASE}
-                    bindings={bindings}
-                    activeControlId={activeControl?.id}
-                    pressedKeys={pressedKeys}
-                />
-                <DiamondGroup
-                    title="Gripper"
-                    controls={grouped.GRIPPER}
-                    bindings={bindings}
-                    activeControlId={activeControl?.id}
-                    pressedKeys={pressedKeys}
-                />
-                <DiamondGroup
-                    title="Arm"
-                    controls={grouped.ARM}
-                    bindings={bindings}
-                    activeControlId={activeControl?.id}
-                    pressedKeys={pressedKeys}
-                />
-
-                <DiamondGroup
-                    title="Head"
-                    controls={grouped.HEAD}
-                    bindings={bindings}
-                    activeControlId={activeControl?.id}
-                    pressedKeys={pressedKeys}
-                />
-            </div>
+            )}
         </div>
     );
 };

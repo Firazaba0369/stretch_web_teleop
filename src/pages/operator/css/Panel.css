@@ -3,6 +3,8 @@
     display: flex;
     flex-direction: column;
     flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
     /* margin: 0 0.5rem; */
     margin-top: 0.5rem; /* new */
     width: 100%; /* new */
@@ -20,6 +22,9 @@
 .tabs-content {
     border: 3px solid var(--btn-blue);
     flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     background-color: var(--background-color);
 }
 
@@ -27,14 +32,16 @@
 
 .tabs-header {
     display: flex;
-    flex-wrap: wrap;
-    overflow: hidden;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-width: 0;
     border-radius: var(--radius) var(--radius) 0px 0px;
 }
 
 /* Apply to all the tabs in the header */
 .tabs-header > * {
-    flex: 1 0 auto;
+    flex: 0 0 auto;
     background-color: var(--tab-inactive);
     border-radius: var(--radius) var(--radius) 0px 0px;
 }
@@ -81,3 +88,6 @@
         width: 100%;
     }
 }
+
+
+/* Small restore button shown on minimized Keyboard Teleop tab */

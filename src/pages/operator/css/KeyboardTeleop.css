@@ -1,8 +1,49 @@
 .keyboard-teleop {
     width: 100%;
-    padding: 8px 12px 10px;
     box-sizing: border-box;
     background: #f8f8f8;
+    border: 1px solid #0b5875;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Expanded vs collapsed shell */
+
+.keyboard-teleop.expanded {
+    padding: 0;
+}
+
+.keyboard-teleop.collapsed {
+    padding: 0;
+}
+
+.keyboard-teleop-expand-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    border: none;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.keyboard-teleop-expand-button:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Body wrapper: only visible when expanded */
+
+.keyboard-teleop-body {
+    padding: 8px 12px 10px;
+    box-sizing: border-box;
+}
+
+.keyboard-teleop.collapsed .keyboard-teleop-body {
+    display: none;
 }
 
 .keyboard-teleop-current-binding {
@@ -259,7 +300,96 @@
 }
 
 @media (max-width: 700px) {
+    .keyboard-teleop-header {
+        padding: 6px 8px;
+    }
+
+    .keyboard-teleop-header-title {
+        font-size: 14px;
+    }
+
+    .keyboard-teleop-header-status {
+        display: none;
+    }
+
     .keyboard-teleop-lower {
         grid-template-columns: 1fr;
     }
 }
+
+
+.keyboard-teleop-quit-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+}
+
+.keyboard-teleop-quit-title-row .keyboard-teleop-expand-button {
+    position: static !important;
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+
+/* Layout: ensure teleop header + body fit inside parent panel */
+.keyboard-teleop {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* allow panel to control overall height */
+    box-sizing: border-box;
+}
+
+/* Keep header compact and body grow/shrink to fit */
+.keyboard-teleop-header {
+    flex: 0 0 auto;
+    height: 40px;
+}
+
+.keyboard-teleop-body {
+    flex: 1 1 auto;
+    overflow: auto; /* allow scrolling if content is larger than available space */
+    padding: 8px 12px 10px;
+    box-sizing: border-box;
+}
+
+/* When collapsed, body hides and teleop keeps header height */
+.keyboard-teleop.collapsed .keyboard-teleop-body {
+    display: none;
+}
+
+/* Defensive: prevent child grids from forcing container taller than available */
+.keyboard-teleop-lower,
+.keyboard-teleop-top-row {
+    max-width: 100%;
+}
+
+
+/* Ensure expand button is visible and clickable inside Quit row */
+.keyboard-teleop-quit-title-row .keyboard-teleop-expand-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: rgba(0,0,0,0.25) !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.15) !important;
+    cursor: pointer !important;
+    z-index: 9999 !important;
+}
+.keyboard-teleop-quit-title-row .keyboard-teleop-expand-button:hover {
+    background: rgba(0,0,0,0.35) !important;
+}
+
+
+/* Collapse-button visible when teleop is collapsed (keeps a visible control) */
+.keyboard-teleop-collapse-button { display: none; position: absolute; top: 6px; right: 6px; z-index: 10000; width: 34px; height: 34px; border-radius:6px; background: rgba(0,0,0,0.25); color:#fff; border:1px solid rgba(0,0,0,0.2); cursor:pointer; }
+.keyboard-teleop.collapsed .keyboard-teleop-collapse-button { display: inline-flex; align-items:center; justify-content:center; }
+/* Hide the Quit-row expand button when collapsed (use the collapse-button instead) */
+.keyboard-teleop.collapsed .keyboard-teleop-quit-title-row .keyboard-teleop-expand-button { display: none !important; }

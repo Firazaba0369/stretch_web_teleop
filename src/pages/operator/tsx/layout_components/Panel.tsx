@@ -35,6 +35,9 @@ export const Panel = (props: CustomizableComponentProps) => {
     const definition = props.definition as PanelDefinition;
     const countChildren = definition.children.length;
 
+    const [keyboardTeleopMinimized, setKeyboardTeleopMinimized] = React.useState(false);
+
+
     // Handle case where active tab was moved or deleted, just use last remaining tab
     if (activeTab >= countChildren) {
         setActiveTab(countChildren - 1);
@@ -58,10 +61,10 @@ export const Panel = (props: CustomizableComponentProps) => {
     if (activeTabDef.label === "Safety") {
         flex = 1;
     } else if (activeTabDef.label === "Keyboard Teleop") {
-        flex = 2;
+        flex = keyboardTeleopMinimized ? 0.5 : 2;
     } else if (activeTabDef.label === "Camera Views") {
-        flex = 2;
-    } else {
+        flex = keyboardTeleopMinimized ? 3 : 2;
+    }else {
         flex = Math.max(activeTabDef.children.length + 1, 1);
     }
 
@@ -71,6 +74,9 @@ export const Panel = (props: CustomizableComponentProps) => {
         sharedState: props.sharedState,
         // Use active tab as the definition for what to render
         definition: activeTabDef,
+        parentOverrides: {
+            keyboardTeleop: { onCollapsedChange: setKeyboardTeleopMinimized },
+        },
     };
 
     /**

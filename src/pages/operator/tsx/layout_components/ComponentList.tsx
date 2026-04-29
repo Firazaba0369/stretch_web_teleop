@@ -17,6 +17,7 @@ export type ComponentListProps = {
     path: string;
     sharedState: SharedState;
     definition: ParentComponentDefinition;
+    parentOverrides?: Record<string, any>;
 };
 
 /**
@@ -35,6 +36,7 @@ export const ComponentList = (props: ComponentListProps) => {
                     definition: compDef,
                     path: curPath,
                     sharedState: props.sharedState,
+                    parentOverrides: props.parentOverrides,
                 };
                 const { type } = compDef;
                 return (
