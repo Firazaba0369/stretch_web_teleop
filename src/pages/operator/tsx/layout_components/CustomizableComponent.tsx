@@ -16,6 +16,7 @@ import { Map } from "./Map";
 import { RunStopButton } from "../static_components/RunStop";
 import { BatteryGuage } from "../static_components/BatteryGauge";
 import { KeyboardTeleop } from "./KeyboardTeleop";
+import { KeyStateMap } from "../function_providers/KeyboardFunctionProvider";
 
 /** State required for all elements */
 export type SharedState = {
@@ -38,6 +39,10 @@ export type SharedState = {
     stretchTool: StretchTool;
     /** Whether or not robot has been homed */
     robotNotHomed: boolean;
+    /** Mapping of each kay function to a {@link KeyState} */
+    keyStateMap?: KeyStateMap;
+    /** Key bindings for the keyboard teleop component */
+    keyBindings?: Record<string, string>;
 };
 
 /** Properties for any of the customizable components: tabs, video streams, or

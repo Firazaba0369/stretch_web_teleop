@@ -3,33 +3,11 @@ import {
     CustomizableComponentProps,
 } from "./CustomizableComponent";
 import "operator/css/KeyboardTeleop.css";
-
-// IDs for all teleop controls for mapping bindings
-type TeleopControlId =
-    | "SLOW"
-    | "MEDIUM"
-    | "FAST"
-    | "BASE_FORWARD"
-    | "BASE_LEFT"
-    | "BASE_BACK"
-    | "BASE_RIGHT"
-    | "ARM_UP"
-    | "ARM_IN"
-    | "ARM_DOWN"
-    | "ARM_OUT"
-    | "GRIPPER_FORWARD"
-    | "GRIPPER_CLOSE"
-    | "GRIPPER_BACK"
-    | "GRIPPER_OPEN"
-    | "HEAD_UP"
-    | "HEAD_LEFT"
-    | "HEAD_DOWN"
-    | "HEAD_RIGHT"
-    | "QUIT";
+import { KeyControls, KeyBindings, KeyState } from "../function_providers/keyboardFunctionProvider";
 
 // Structure defining each control, its label, optional hint, and grouping for display
 type TeleopControl = {
-    id: TeleopControlId;
+    id: KeyControls;
     label: string;
     hint?: string;
     group: "STEP" | "BASE" | "ARM" | "GRIPPER" | "HEAD" | "QUIT";
@@ -37,9 +15,9 @@ type TeleopControl = {
 
 // List of all controls with their respective IDs, labels, hints, and groups
 const TELEOP_CONTROLS: TeleopControl[] = [
-    { id: "SLOW", label: "Slow", hint: "Step Size", group: "STEP" },
-    { id: "MEDIUM", label: "Medium", hint: "Step Size", group: "STEP" },
-    { id: "FAST", label: "Fast", hint: "Step Size", group: "STEP" },
+    { id: "STEP_SLOW", label: "STEP_SLOW", hint: "Step Size", group: "STEP" },
+    { id: "STEP_MEDIUM", label: "STEP_MEDIUM", hint: "Step Size", group: "STEP" },
+    { id: "STEP_FAST", label: "STEP_FAST", hint: "Step Size", group: "STEP" },
 
     { id: "BASE_FORWARD", label: "Forward", hint: "Base", group: "BASE" },
     { id: "BASE_LEFT", label: "Left", hint: "Base", group: "BASE" },
@@ -64,7 +42,7 @@ const TELEOP_CONTROLS: TeleopControl[] = [
     { id: "QUIT", label: "Quit", group: "QUIT" },
 ];
 
-type BindingMap = Partial<Record<TeleopControlId, string>>;
+type BindingMap = Partial<Record<KeyControls, string>>;
 
 
 // Helper function to format key values for display
@@ -152,7 +130,7 @@ type DiamondGroupProps = {
     title: string;
     controls: TeleopControl[];
     bindings: BindingMap;
-    activeControlId?: TeleopControlId;
+    activeControlId?: KeyControls;
     pressedKeys: Set<string>;
 };
 
@@ -268,6 +246,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps & { onCollapsed
     useEffect(() => {
         if (bindingComplete) {
             setIsCollapsed(true);
+            props.sharedState.keyboardStateMap
         }
     }, [bindingComplete]);
 
