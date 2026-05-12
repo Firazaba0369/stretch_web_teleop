@@ -20,6 +20,7 @@ import { FirebaseStorageHandler } from "./storage_handler/FirebaseStorageHandler
 import { LocalStorageHandler } from "./storage_handler/LocalStorageHandler";
 import { FirebaseOptions } from "firebase/app";
 import { ButtonFunctionProvider } from "./function_providers/ButtonFunctionProvider";
+import { KeyboardFunctionProvider } from "./function_providers/KeyboardFunctionProvider";
 import { FunctionProvider } from "./function_providers/FunctionProvider";
 import { PredictiveDisplayFunctionProvider } from "./function_providers/PredictiveDisplayFunctionProvider";
 import { UnderVideoFunctionProvider } from "./function_providers/UnderVideoFunctionProvider";
@@ -50,6 +51,7 @@ export let storageHandler: StorageHandler;
 // Create the function providers. These abstract the logic between the React
 // components and remote robot.
 export var buttonFunctionProvider = new ButtonFunctionProvider();
+export var keyboardFunctionProvider = new keyboardFunctionProvider();
 export var predicitiveDisplayFunctionProvider =
     new PredictiveDisplayFunctionProvider();
 export var underVideoFunctionProvider = new UnderVideoFunctionProvider();
@@ -258,6 +260,9 @@ function configureRemoteRobot() {
     mapFunctionProvider = new MapFunctionProvider();
     remoteRobot.sensors.setFunctionProviderCallback(
         buttonFunctionProvider.updateJointStates,
+    );
+    remoteRobot.sensors.setFunctionProviderCallback(
+        keyboardFunctionProvider.updateJointStates,
     );
     remoteRobot.sensors.setJointStateFunctionProviderCallback(
         underVideoFunctionProvider.jointStateCallback,
