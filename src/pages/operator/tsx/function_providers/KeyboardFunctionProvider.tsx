@@ -7,40 +7,33 @@ import {
 import { ActionMode } from "../utils/component_definitions";
 import { FunctionProvider } from "./FunctionProvider";
 
+/** Each of the possible key controls */
 export type KeyControls =
-  | "STEP_SLOW"
-  | "STEP_MEDIUM"
-  | "STEP_FAST"
-  | "BASE_FORWARD"
-  | "BASE_LEFT"
-  | "BASE_BACK"
-  | "BASE_RIGHT"
-  | "ARM_UP"
-  | "ARM_IN"
-  | "ARM_DOWN"
-  | "ARM_OUT"
-  | "GRIPPER_FORWARD"
-  | "GRIPPER_CLOSE"
-  | "GRIPPER_BACK"
-  | "GRIPPER_OPEN"
-  | "HEAD_UP"
-  | "HEAD_LEFT"
-  | "HEAD_DOWN"
-  | "HEAD_RIGHT"
-  | "QUIT";
+    | "STEP_SLOW"
+    | "STEP_MEDIUM"
+    | "STEP_FAST"
+    | "BASE_FORWARD"
+    | "BASE_LEFT"
+    | "BASE_BACK"
+    | "BASE_RIGHT"
+    | "ARM_UP"
+    | "ARM_IN"
+    | "ARM_DOWN"
+    | "ARM_OUT"
+    | "GRIPPER_FORWARD"
+    | "GRIPPER_CLOSE"
+    | "GRIPPER_BACK"
+    | "GRIPPER_OPEN"
+    | "HEAD_UP"
+    | "HEAD_LEFT"
+    | "HEAD_DOWN"
+    | "HEAD_RIGHT"
+    | "QUIT";
 
-/** State for a single button on a button pad. */
-export enum KeyState {
-    Inactive = "inactive",
-    Active = "active",
-    Collision = "collision",
-    Limit = "limit",
-}
-export type KeyboardStateMap = Map<KeyControls, KeyState>;
 export type KeyBindings = Partial<Record<KeyControls, string>>;
 
 /** Array of the pan tilt keys */
-export const panTiltkeys: KeyControls[] = [
+export const panTiltKeys: KeyControls[] = [
     "HEAD_UP",
     "HEAD_DOWN",
     "HEAD_LEFT",
