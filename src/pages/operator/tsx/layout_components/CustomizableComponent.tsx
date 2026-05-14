@@ -15,8 +15,8 @@ import { VirtualJoystick } from "./VirtualJoystick";
 import { Map } from "./Map";
 import { RunStopButton } from "../static_components/RunStop";
 import { BatteryGuage } from "../static_components/BatteryGauge";
-import { KeyboardTeleop } from "./KeyboardTeleop";
-import { KeyStateMap } from "../function_providers/KeyboardFunctionProvider";
+import { KeyboardTeleop } from "./keyboardTeleop";
+import { KeyboardStateMap, KeyControls, KeyState } from "../function_providers/KeyboardFunctionProvider";
 
 /** State required for all elements */
 export type SharedState = {
@@ -40,9 +40,11 @@ export type SharedState = {
     /** Whether or not robot has been homed */
     robotNotHomed: boolean;
     /** Mapping of each kay function to a {@link KeyState} */
-    keyStateMap?: KeyStateMap;
+    keyStateMap?: KeyboardStateMap;
     /** Key bindings for the keyboard teleop component */
     keyBindings?: Record<string, string>;
+    /** Callback when keyboard key state changes */
+    onKeyStateChange?: (control: KeyControls, state: KeyState) => void;
 };
 
 /** Properties for any of the customizable components: tabs, video streams, or
