@@ -31,6 +31,7 @@ import {
     StorageHandler,
 } from "./storage_handler/StorageHandler";
 import { FunctionProvider } from "./function_providers/FunctionProvider";
+import { KeyboardFunctionProvider, KeyState, KeyControls } from "./function_providers/KeyboardFunctionProvider";
 import {
     addToLayout,
     moveInLayout,
@@ -283,6 +284,18 @@ export const Operator = (props: {
         setSelectedPath(undefined);
     }
 
+    // Initialize keyboard state map for keyboard teleop
+    const [keyStateMap] = React.useState(() => new Map());
+    const [keyBindings, setKeyBindings] = React.useState({});
+    
+    // Create keyboard function provider instance
+    const keyboardFunctionProvider = React.useRef(new KeyboardFunctionProvider());
+
+    // Callback for when keyboard teleop updates key state
+    const handleKeyStateChange = React.useCallback((control: KeyControls, state: KeyState) => {
+        keyboardFunctionProvider.current.handleKeyStateChange(control, state);
+    }, []);
+
     /** State passed from the operator and shared by all components */
     const sharedState: SharedState = {
         customizing: customizing,
@@ -298,6 +311,9 @@ export const Operator = (props: {
         hasBetaTeleopKit: hasBetaTeleopKit,
         stretchTool: stretchTool,
         robotNotHomed: robotNotHomed,
+        keyStateMap: keyStateMap,
+        keyBindings: keyBindings,
+        onKeyStateChange: handleKeyStateChange,
     };
 
     /** Properties for the global options area of the sidebar */

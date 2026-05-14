@@ -40,7 +40,7 @@ export const panTiltKeys: KeyControls[] = [
     "HEAD_RIGHT",
 ];
 
-/** Key functions which require moving a joint in the negative direction. */
+/** key functions which require moving a joint in the negative direction. */
 const negativeKeyPadFunctions = new Set<KeyControls>([
     "BASE_BACK",
     "BASE_RIGHT",
@@ -48,169 +48,128 @@ const negativeKeyPadFunctions = new Set<KeyControls>([
     "ARM_IN",
     "GRIPPER_CLOSE",
     "HEAD_DOWN",
-    "HEAD_RIGHT",
+    "HEAD_LEFT",
 ]);
 
-/** Function provider for the keyboard teleop component. */
-export class KeyboardFunctionProvider extends FunctionProvider {
-    private keyBindings: KeyBindings = {};
+/** Map KeyControls to joint names and direction */
+function getJointNameFromKeyControl(
+    control: KeyControls
+): { joint: ValidJoints; isNegative: boolean } {
+    const isNegative = negativeKeyPadFunctions.has(control);
+    
+    switch (control) {
+        case "BASE_BACK":
+        case "BASE_FORWARD":
+            return { joint: "translate_mobile_base", isNegative };
 
-    constructor() {
-        super();
-        this.provideFunctions = this.provideFunctions.bind(this);
+        case "BASE_LEFT":
+        case "BASE_RIGHT":
+            return { joint: "rotate_mobile_base", isNegative };
+
+        case "ARM_DOWN":
+        case "ARM_UP":
+            return { joint: "joint_lift", isNegative };
+
+        case "ARM_IN":
+        case "ARM_OUT":
+            return { joint: "wrist_extension", isNegative };
+
+        case "GRIPPER_CLOSE":
+        case "GRIPPER_OPEN":
+            return { joint: "joint_gripper_finger_left", isNegative };
+
+        case "HEAD_LEFT":
+        case "HEAD_RIGHT":
+            return { joint: "joint_head_pan", isNegative };
+
+        case "HEAD_UP":
+        case "HEAD_DOWN":
+            return { joint: "joint_head_tilt", isNegative };
+
+        default:
+            throw Error(`unknown key control: ${control}`);
     }
+}
 
-    /**
-     * Takes a physical key press string, resolves it to a `KeyControls`,
-     * and returns functions that call the movement helpers on this provider.
-     *
-     * - StepActions → incremental* helpers
-     * - PressAndHold → continuous* helpers, stop on release
-     * - ClickClick → toggle continuous action on click
-     */
-    public provideFunctions(keyPress: string) {
-        const keyControl = this.resolveKeyControl(keyPress);
-        if (!keyControl) return { onClick: () => {} };
-
-        let action: () => void;
-        const jointName: ValidJoints = getJointNameFromKeyFunction(keyControl);
-        const multiplier: number = negativeKeyPadFunctions.has(keyControl)
-            ? -1
-            : 1;
-        const velocity =
-            multiplier *
-            JOINT_VELOCITIES[jointName]! *
-            FunctionProvider.velocityScale;
-        const increment =
-            multiplier *
-            JOINT_INCREMENTS[jointName]! *
-            FunctionProvider.velocityScale;
-
-        const onLeave = () => {
-            this.stopCurrentAction();
-        };
-
-        switch (FunctionProvider.actionMode) {
-            case ActionMode.StepActions:
-                switch (keyControl) {
-                    case "BASE_FORWARD":
-                    case "BASE_BACK":
-                        action = () => this.incrementalBaseDrive(velocity, 0.0);
-                        break;
-                    case "BASE_LEFT":
-                    case "BASE_RIGHT":
-                        action = () => this.incrementalBaseDrive(0.0, velocity);
-                        break;
-                    case "ARM_DOWN":
-                    case "ARM_UP":
-                    case "ARM_IN":
-                    case "ARM_OUT":
-                    case "GRIPPER_FORWARD":
-                    case "GRIPPER_BACK":
-                    case "GRIPPER_OPEN":
-                    case "GRIPPER_CLOSE":
-                        action = () =>
-                            this.incrementalJointMovement(jointName, increment);
-                        break;
-                    case "HEAD_UP":
-                    case "HEAD_DOWN":
-                    case "HEAD_LEFT":
-                    case "HEAD_RIGHT":
-                        action = () => {
-                            this.incrementalJointMovement(jointName, increment);
-                            FunctionProvider.remoteRobot?.setToggle(
-                                "setFollowGripper",
-                                false,
-                            );
-                        };
-                        break;
-                    default:
-                        action = () => {};
-                }
-                return {
-                    onClick: () => {
-                        action();
-                    },
-                    onLeave,
-                };
-
-            case ActionMode.PressAndHold:
-            case ActionMode.ClickClick:
-                switch (keyControl) {
-                    case "BASE_FORWARD":
-                    case "BASE_BACK":
-                        action = () => this.continuousBaseDrive(velocity, 0.0);
-                        break;
-                    case "BASE_LEFT":
-                    case "BASE_RIGHT":
-                        action = () => this.continuousBaseDrive(0.0, velocity);
-                        break;
-                    default:
-                        action = () => this.continuousJointMovement(jointName, increment);
-                }
-
-                return FunctionProvider.actionMode === ActionMode.PressAndHold
-                    ? {
-                          onClick: () => {
-                              action();
-                          },
-                          onRelease: () => {
-                              this.stopCurrentAction();
-                          },
-                          onLeave,
-                      }
-                    : {
-                          onClick: () => {
-                              if (this.activeVelocityAction) {
-                                  this.stopCurrentAction();
-                              } else {
-                                  action();
-                              }
-                          },
-                          onLeave,
-                      };
-        }
-    }
-
-    private resolveKeyControl(keyPress: string): KeyControls | undefined {
-        if (!keyPress) return undefined;
-        const entries = Object.entries(this.keyBindings) as [KeyControls, string][];
-        for (const [control, boundKey] of entries) {
-            if (boundKey === keyPress) return control;
-        }
-        return undefined;
+/** Get velocity or increment amount based on step size control */
+function getStepSize(currentStepControl: KeyControls | undefined): number {
+    switch (currentStepControl) {
+        case "STEP_FAST":
+            return 0.1;
+        case "STEP_MEDIUM":
+            return 0.05;
+        case "STEP_SLOW":
+        default:
+            return 0.02;
     }
 }
 
 /**
- * Maps a `KeyControls` to its `ValidJoints` joint name.
+ * Keyboard function provider - handles keyboard control of the robot
  */
-function getJointNameFromKeyFunction(keyControl: KeyControls): ValidJoints {
-    switch (keyControl) {
-        case "BASE_BACK":
-        case "BASE_FORWARD":
-            return "translate_mobile_base";
-        case "BASE_LEFT":
-        case "BASE_RIGHT":
-            return "rotate_mobile_base";
-        case "ARM_DOWN":
-        case "ARM_UP":
-            return "joint_lift";
-        case "ARM_IN":
-        case "ARM_OUT":
-            return "wrist_extension";
-        case "GRIPPER_CLOSE":
-        case "GRIPPER_OPEN":
-        case "GRIPPER_FORWARD":
-        case "GRIPPER_BACK":
-            return "joint_gripper_finger_left";
-        case "HEAD_DOWN":
-        case "HEAD_UP":
-            return "joint_head_tilt";
-        case "HEAD_LEFT":
-        case "HEAD_RIGHT":
-            return "joint_head_pan";
-        default:
-            throw Error("unknown keyboard function " + keyControl);
+export class KeyboardFunctionProvider extends FunctionProvider {
+    private currentActiveKeys = new Set<KeyControls>();
+
+    /**
+     * Handle a key state change (active or inactive)
+     * @param control which control changed
+     * @param state new state (Active or Inactive)
+     */
+    public handleKeyStateChange(control: KeyControls, state: KeyState) {
+        if (state === KeyState.Active) {
+            this.currentActiveKeys.add(control);
+            this.executeKeyboardAction(control);
+        } else {
+            this.currentActiveKeys.delete(control);
+            // If no more keys are active for this joint, stop the action
+            if (!this.hasActiveKeyForJoint(control)) {
+                this.stopCurrentAction(true);
+            }
+        }
+    }
+
+    /**
+     * Execute the robot action for the given keyboard control
+     */
+    private executeKeyboardAction(control: KeyControls) {
+        // Handle step size controls (these are metadata, not actions)
+        if (control.startsWith("STEP_")) return;
+
+        // Handle quit
+        if (control === "QUIT") {
+            this.stopCurrentAction(true);
+            return;
+        }
+
+        // Get the joint and direction for this control
+        const { joint, isNegative } = getJointNameFromKeyControl(control);
+
+        // Determine step size from STEP_* controls
+        const stepControl = Array.from(this.currentActiveKeys).find(k =>
+            k.startsWith("STEP_")
+        ) as KeyControls | undefined;
+        const stepSize = getStepSize(stepControl);
+
+        // Determine velocity direction
+        const velocity = isNegative ? -stepSize : stepSize;
+
+        // Execute continuous movement
+        this.continuousJointMovement(joint, velocity);
+    }
+
+    /**
+     * Check if there's still an active key for the given joint
+     */
+    private hasActiveKeyForJoint(control: KeyControls): boolean {
+        const { joint } = getJointNameFromKeyControl(control);
+        
+        return Array.from(this.currentActiveKeys).some(key => {
+            try {
+                const { joint: otherJoint } = getJointNameFromKeyControl(key);
+                return otherJoint === joint;
+            } catch {
+                return false;
+            }
+        });
     }
 }

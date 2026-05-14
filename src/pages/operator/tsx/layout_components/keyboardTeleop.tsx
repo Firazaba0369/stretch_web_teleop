@@ -3,7 +3,7 @@ import {
     CustomizableComponentProps,
 } from "./CustomizableComponent";
 import "operator/css/KeyboardTeleop.css";
-import { KeyControls, KeyBindings, KeyState } from "../function_providers/keyboardFunctionProvider";
+import { KeyControls, KeyBindings, KeyState } from "../function_providers/KeyboardFunctionProvider";
 
 // Structure defining each control, its label, optional hint, and grouping for display
 type TeleopControl = {
@@ -226,6 +226,26 @@ export const KeyboardTeleop = (props: CustomizableComponentProps & { onCollapsed
     // auto-collapse after last key is bound
     const [isCollapsed, setIsCollapsed] = useState(false);
 
+    // Initialize keyStateMap on mount
+    useEffect(() => {
+        if (!props.sharedState.keyStateMap) {
+            props.sharedState.keyStateMap = new Map();
+        }
+        // Initialize all controls as Inactive
+        TELEOP_CONTROLS.forEach((control) => {
+            if (!props.sharedState.keyStateMap!.has(control.id)) {
+                props.sharedState.keyStateMap!.set(control.id, KeyState.Inactive);
+            }
+        });
+
+        // Cleanup on unmount: reset all keys to Inactive
+        return () => {
+            TELEOP_CONTROLS.forEach((control) => {
+                props.sharedState.keyStateMap?.set(control.id, KeyState.Inactive);
+            });
+        };
+    }, []);
+
     useEffect(() => {
         // DEBUG: log collapsed state and whether parent handler exists
         console.debug('KeyboardTeleop: isCollapsed=', isCollapsed, 'hasOnCollapsed=', !!props.onCollapsedChange);
@@ -246,9 +266,10 @@ export const KeyboardTeleop = (props: CustomizableComponentProps & { onCollapsed
     useEffect(() => {
         if (bindingComplete) {
             setIsCollapsed(true);
-            props.sharedState.keyboardStateMap
+            // Persist bindings to shared state
+            props.sharedState.keyBindings = { ...bindings };
         }
-    }, [bindingComplete]);
+    }, [bindingComplete, bindings]);
 
     // Effect to handle keydown events for binding controls when in binding mode
     useEffect(() => {
@@ -288,30 +309,52 @@ export const KeyboardTeleop = (props: CustomizableComponentProps & { onCollapsed
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [isBinding, activeControl, bindings]);
 
-    // Effect to track currently pressed keys for visual feedback on key tiles
+    // Effect to track currently pressed keys for visual feedback and update keyStateMap
     useEffect(() => {
         if (isBinding) return;
 
         const onKeyDown = (event: KeyboardEvent) => {
             const formattedKey = formatKey(event);
 
+            // Track visual pressed state
             setPressedKeys((prev) => {
                 if (prev.has(formattedKey)) return prev;
                 const next = new Set(prev);
                 next.add(formattedKey);
                 return next;
             });
+
+            // Find which control this key maps to and update keyStateMap
+            const control = (Object.entries(bindings) as [KeyControls, string][])
+                .find(([, key]) => key === formattedKey)?.[0];
+            
+            if (control && props.sharedState.keyStateMap) {
+                props.sharedState.keyStateMap.set(control, KeyState.Active);
+                // Call the callback to notify the keyboard function provider
+                props.sharedState.onKeyStateChange?.(control, KeyState.Active);
+            }
         };
 
         const onKeyUp = (event: KeyboardEvent) => {
             const formattedKey = formatKey(event);
 
+            // Track visual released state
             setPressedKeys((prev) => {
                 if (!prev.has(formattedKey)) return prev;
                 const next = new Set(prev);
                 next.delete(formattedKey);
                 return next;
             });
+
+            // Find which control this key mapped to and update keyStateMap
+            const control = (Object.entries(bindings) as [KeyControls, string][])
+                .find(([, key]) => key === formattedKey)?.[0];
+            
+            if (control && props.sharedState.keyStateMap) {
+                props.sharedState.keyStateMap.set(control, KeyState.Inactive);
+                // Call the callback to notify the keyboard function provider
+                props.sharedState.onKeyStateChange?.(control, KeyState.Inactive);
+            }
         };
 
         window.addEventListener("keydown", onKeyDown);
@@ -321,7 +364,7 @@ export const KeyboardTeleop = (props: CustomizableComponentProps & { onCollapsed
             window.removeEventListener("keydown", onKeyDown);
             window.removeEventListener("keyup", onKeyUp);
         };
-    }, [isBinding]);
+    }, [isBinding, bindings]);
 
     // Group controls by their defined groups for organized rendering
     const grouped = useMemo(() => {
