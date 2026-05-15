@@ -31,6 +31,10 @@ export type KeyControls =
     | "QUIT";
 
 export type KeyBindings = Partial<Record<KeyControls, string>>;
+export enum KeyState {
+    Active,
+    Inactive,
+}   
 
 /** Array of the pan tilt keys */
 export const panTiltKeys: KeyControls[] = [
@@ -78,6 +82,10 @@ function getJointNameFromKeyControl(
         case "GRIPPER_OPEN":
             return { joint: "joint_gripper_finger_left", isNegative };
 
+        case "GRIPPER_FORWARD":
+        case "GRIPPER_BACK":
+            return { joint: "joint_wrist_yaw", isNegative };
+
         case "HEAD_LEFT":
         case "HEAD_RIGHT":
             return { joint: "joint_head_pan", isNegative };
@@ -109,6 +117,7 @@ function getStepSize(currentStepControl: KeyControls | undefined): number {
  */
 export class KeyboardFunctionProvider extends FunctionProvider {
     private currentActiveKeys = new Set<KeyControls>();
+    private currentStepControl: KeyControls = "STEP_SLOW";
 
     /**
      * Handle a key state change (active or inactive)
@@ -117,11 +126,20 @@ export class KeyboardFunctionProvider extends FunctionProvider {
      */
     public handleKeyStateChange(control: KeyControls, state: KeyState) {
         if (state === KeyState.Active) {
+            if (control.startsWith("STEP_")) {
+                this.currentStepControl = control;
+                return;
+            }
+
             this.currentActiveKeys.add(control);
             this.executeKeyboardAction(control);
-        } else {
+        }else {
             this.currentActiveKeys.delete(control);
-            // If no more keys are active for this joint, stop the action
+
+            if (control === "QUIT") {
+                return;
+            }
+
             if (!this.hasActiveKeyForJoint(control)) {
                 this.stopCurrentAction(true);
             }
@@ -145,10 +163,7 @@ export class KeyboardFunctionProvider extends FunctionProvider {
         const { joint, isNegative } = getJointNameFromKeyControl(control);
 
         // Determine step size from STEP_* controls
-        const stepControl = Array.from(this.currentActiveKeys).find(k =>
-            k.startsWith("STEP_")
-        ) as KeyControls | undefined;
-        const stepSize = getStepSize(stepControl);
+        const stepSize = getStepSize(this.currentStepControl);
 
         // Determine velocity direction
         const velocity = isNegative ? -stepSize : stepSize;

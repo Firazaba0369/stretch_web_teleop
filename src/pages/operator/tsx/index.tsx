@@ -51,7 +51,7 @@ export let storageHandler: StorageHandler;
 // Create the function providers. These abstract the logic between the React
 // components and remote robot.
 export var buttonFunctionProvider = new ButtonFunctionProvider();
-export var keyboardFunctionProvider = new keyboardFunctionProvider();
+export var keyboardFunctionProvider = new KeyboardFunctionProvider();
 export var predicitiveDisplayFunctionProvider =
     new PredictiveDisplayFunctionProvider();
 export var underVideoFunctionProvider = new UnderVideoFunctionProvider();

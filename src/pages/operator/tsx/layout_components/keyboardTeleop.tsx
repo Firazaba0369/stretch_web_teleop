@@ -15,9 +15,9 @@ type TeleopControl = {
 
 // List of all controls with their respective IDs, labels, hints, and groups
 const TELEOP_CONTROLS: TeleopControl[] = [
-    { id: "STEP_SLOW", label: "STEP_SLOW", hint: "Step Size", group: "STEP" },
-    { id: "STEP_MEDIUM", label: "STEP_MEDIUM", hint: "Step Size", group: "STEP" },
-    { id: "STEP_FAST", label: "STEP_FAST", hint: "Step Size", group: "STEP" },
+    { id: "STEP_SLOW", label: "SLOW", hint: "Step Size", group: "STEP" },
+    { id: "STEP_MEDIUM", label: "MEDIUM", hint: "Step Size", group: "STEP" },
+    { id: "STEP_FAST", label: "FAST", hint: "Step Size", group: "STEP" },
 
     { id: "BASE_FORWARD", label: "Forward", hint: "Base", group: "BASE" },
     { id: "BASE_LEFT", label: "Left", hint: "Base", group: "BASE" },
